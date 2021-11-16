@@ -1,4 +1,4 @@
-import {useState, useContext} from 'react';
+import {useState, useContext, useEffect} from 'react';
 import {
   ChakraProvider,
   Box,
@@ -14,19 +14,20 @@ import hg from './assets/hive_cropped.gif'
 import { ethers } from 'ethers'
 import { Web3Context } from "./web3";
 import whitelist from './merkle/whitelist'
-import SmartContractABI from "./artifacts/contracts/Zombeez.sol/Zombeez.json";
+import smartContract from "./artifacts/contracts/Zombeez.sol/Zombeez.json";
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require('keccak256')
 
 function App() {
-  const [feedback, setFeedback] = useState("Welcome to Zombeez, a collection of 8335 pixelated spooky beez!");
   const { account, connectWeb3, provider } = useContext(Web3Context)
+  const [feedback, setFeedback] = useState("Welcome to Zombeez, a collection of 8335 pixelated spooky beez!");
+  const [whitelisted, setWhitelisted] = useState()
 
-  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
-  const contract = new ethers.Contract(contractAddress, SmartContractABI, provider.getSigner())
+  const contractAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+  const contract = new ethers.Contract(contractAddress, smartContract.abi, provider.getSigner())
 
-  // Checking Merkle if address is eleigible
-  const merkle = () => {
+  // Checking Merkle if address is eligible
+  const merkle = async () => {
     const buf2hex = x => '0x' + x.toString('hex')
     const leaves = whitelist.map(x => keccak256(x))
     const tree = new MerkleTree(leaves, keccak256);
@@ -36,32 +37,39 @@ function App() {
     contract.functions.verifyWhitelist(hexProof, positions)
     .then((values) => {
       if (values[0] === true) {
-        return true;
-      } else {
-        return false;
-        }
+        setWhitelisted(true)
+      }
+    })
+    .catch((error) => {
+       console.log(error)
     })
   }
 
-  const mintForTokenHolders = (_amount) => {
-    if (_amount <= 0) {
-        return;
+  // Once they are logged in decide if they are Whitelisted or not
+  useEffect(() => {
+    if (account != null) {
+        merkle(); 
     }
-    if (!merkle) {
-        setFeedback("Not on the whitelist, sorry")
-        return;
+  }, [account])
+
+  // Mint function for holders of said token
+  const mintForTokenHolders = () => {
+    if (whitelisted) {
+      setFeedback("Minting your free NFT...")
+    } else {
+      setFeedback("You arent't on the whitelist")
+      return;
     }
-    setFeedback("Minting your Zombeez...");
-    contract.functions.mintForTokenHolder(_amount)
-      .once("error", (err) => {
-        console.log(err);
-        setFeedback(
-          "Sorry, something went wrong please try again later or contact support"
-        );
-      })
-      .then((receipt) => {
-        setFeedback("You now own a Zombee! go visit Opensea.io to view it.");
-      });
+    // contract.functions.mintForTokenHolder(1, hexProof, positions)
+    //   .once("error", (err) => {
+    //     console.log(err);
+    //     setFeedback(
+    //       "Sorry, something went wrong please try again later or contact support"
+    //     );
+    //   })
+    //   .then((receipt) => {
+    //     setFeedback("You now own a Zombee! go visit Opensea.io to view it.");
+    //   });
   };
 
   return (
@@ -71,10 +79,10 @@ function App() {
           <VStack spacing={50}>
             <Image src={hg} htmlHeight="600" htmlWidth="700"/>
             {account == null ? (
-            <button onClick={connectWeb3}>Connect to Metamask</button>
+            <Button onClick={connectWeb3}>Connect to Metamask</Button>
               ) : (
                 <>
-              <Button width="35%" 
+              <Button width="35%"
                 onClick={mintForTokenHolders}
               >Claim Free Zombee! (Dizzy Dragon and CryptoToadz only)</Button>
               <Button width="20%" 

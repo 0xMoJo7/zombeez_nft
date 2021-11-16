@@ -1,0 +1,7 @@
+{
+  "name": "hardhat-project",
+  "dependencies": {
+    "@fontsource/arbutus": "^4.5.0",
+    "keccak256": "^1.0.3"
+  }
+}

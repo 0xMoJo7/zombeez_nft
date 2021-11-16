@@ -1,4 +1,3 @@
-//import { whitelist } from "./whitelist"
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require('keccak256')
 const whitelist = [
@@ -12012,3 +12011,4 @@ const root = tree.getRoot();
 const hexRoot = buf2hex(root);
 // This is what we will pass in to our contract when we deploy it
 console.log(hexRoot)
+// 0xc410203efee0f63ea0c52cfa96989359194bf32608def37cc8b5b7e4cd70304c
