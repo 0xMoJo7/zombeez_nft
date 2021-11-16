@@ -1,1 +1,1 @@
-# zombeez_nft
+# Zombeez

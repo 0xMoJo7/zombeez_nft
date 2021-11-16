@@ -1,3 +1,10 @@
+# dont need to store all the images in git
+/art/images/*
+/art/zombeez_assets/*
+
+.DS_Store
+*.pyc
+
 # Logs
 logs
 *.log
@@ -102,3 +109,5 @@ dist
 
 # TernJS port file
 .tern-port
+
+/art
